@@ -11,6 +11,7 @@
  * - DLL has to exist on disk
  * - Calling LoadLibraryA creates an image load callback
  * - Doing anything complex in DLL_PROCESS_ATTACH will probably break stuff
+ * - Putting stuff in DLLMAIN means it only runs once, and not when the DLL is already loaded
 */
 
 int main(int argc, char const *argv[])
