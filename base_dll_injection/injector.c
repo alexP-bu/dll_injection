@@ -34,7 +34,7 @@ int main(int argc, char const *argv[])
         return 0;
     }
 
-    //allocate memory for a call to loadlibraryA
+    //allocate memory for dll path
     SIZE_T buffSize = strlen(argv[2]) + 1 * sizeof(char);
     void* dllBuffer = VirtualAllocEx(
         remoteProc, 
