@@ -5,7 +5,7 @@
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved){
     switch(fdwReason){
         case DLL_PROCESS_ATTACH: {
-            MessageBoxA(NULL, "hello world, from inside your process!", "dll injection done", 0x00000000L);
+            MessageBoxA(NULL, "hello world, from inside your process ^_^", "sp00ky", 0x00000000L);
         }
         case DLL_THREAD_ATTACH:
         case DLL_THREAD_DETACH:

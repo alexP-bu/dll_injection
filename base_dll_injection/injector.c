@@ -5,7 +5,7 @@
 #define BUFSIZE 4096
 
 /*
- * This file contains the code for doing a regular DLL injection into a process
+ * Injector.c contains the code for doing a regular DLL injection into a process
  * This is NOT the best way to do it, and is the starting point for injecting in.
  * Problems with this approach: 
  * - DLL has to exist on disk
@@ -18,7 +18,7 @@ int main(int argc, char const *argv[])
 {
     //if no args, get pid of process we are injecting into
     if (argc < 3){
-        printf("Usage: %s pid path_to_dll\n", argv[0]);
+        printf("Usage: %s <pid> <path_to_dll>\n", argv[0]);
         return 1;
     }
     DWORD pid = atoi(argv[1]);
@@ -35,10 +35,11 @@ int main(int argc, char const *argv[])
     }
 
     //allocate memory for a call to loadlibraryA
+    SIZE_T buffSize = strlen(argv[2]) + 1 * sizeof(char);
     void* dllBuffer = VirtualAllocEx(
         remoteProc, 
         NULL, 
-        1 << 12, 
+        buffSize, 
         MEM_RESERVE | MEM_COMMIT, 
         PAGE_READWRITE);
         
@@ -67,7 +68,6 @@ int main(int argc, char const *argv[])
     }
 
     //copy the path of the dll in to the remote process
-    SIZE_T buffSize = strlen(argv[2]) + 1 * sizeof(char);
     if(!WriteProcessMemory(
         remoteProc, 
         dllBuffer, 
@@ -96,7 +96,7 @@ int main(int argc, char const *argv[])
     WaitForSingleObject(hRThread, 15000); //arbitrary timeout
     //cleanup
     CloseHandle(hRThread);
-    CloseHandle(hkernel32);
     CloseHandle(remoteProc);
+    FreeLibrary(hkernel32);
     return 0;
 }
