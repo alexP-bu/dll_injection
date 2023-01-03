@@ -3,7 +3,7 @@
 #include <tlhelp32.h>
 
 #define BUFSIZE 4096
-
+//idea from https://github.com/kbsec/CS-501-malware-course-public/blob/main/LectureCode/DLL_Injection/inject.cpp
 /*
  * Injector.c contains the code for doing a regular DLL injection into a process
  * This is NOT the best way to do it, and is the starting point for injecting in.
