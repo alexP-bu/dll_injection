@@ -33,6 +33,8 @@ BYTE* getFileBytes(char* path){
   }
   buffer[fileSize] = '\0';
   printf("[+] Finished reading file bytes successfully...\n");
+  //cleanup
+  CloseHandle(hFile);
   return buffer;
 }
 
@@ -77,8 +79,9 @@ int main(int argc, char *argv[]){
     }
   }
   printf("[+] Finished memory mapping PE headers and sections successfully...\n");
-  //load dependencies
+  //load dependencies: pe -> for dll in dlls -> for function in dlls -> get virtual address and patch
   //base relocations
   //handle TLS callbacks
+  //run entry point
   return 0;
 }
