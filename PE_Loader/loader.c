@@ -76,7 +76,7 @@ int main(int argc, char *argv[]){
       memcpy(destination, source, sections[i].SizeOfRawData);
     }
   }
-  printf("[+] Finished memory mapping PE headers and sections.\n");
+  printf("[+] Finished memory mapping PE headers and sections...\n");
   //load dependencies
   //base relocations
   //handle TLS callbacks
