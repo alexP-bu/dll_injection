@@ -135,7 +135,7 @@ int main(int argc, char *argv[]){
     while(relocation->VirtualAddress > 0){
         DWORD numRelocs = (relocation->SizeOfBlock - (sizeof(DWORD) * 2) )/ (sizeof(WORD));
         UINT_PTR page = (UINT_PTR) (baseAddress + relocation->VirtualAddress);
-        printf("[+] There are %d relocations to perform\n", numRelocs);
+        printf("[*] There are %d relocations to perform\n", numRelocs);
         for(DWORD i = 0; i < numRelocs; i++){
             WORD block = relocation->relocation[i];
             DWORD type = block >> 12;
