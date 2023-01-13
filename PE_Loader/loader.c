@@ -142,12 +142,11 @@ int main(int argc, char *argv[]){
             DWORD offset = block & 0xfff;
             printf("[-] Performation Relocation: %lu, %d\n", type, offset);
             ULONGLONG *relocVirtualAddress = NULL;
-            switch( type){
+            switch(type){
                 case IMAGE_REL_BASED_ABSOLUTE:
-                    printf("[-] IMAGE_REL_BASED_ABSOLUTE -> nothing to be done!\n");
                     break;
                 case IMAGE_REL_BASED_DIR64:
-                    relocVirtualAddress = (ULONGLONG*) (page + offset );
+                    relocVirtualAddress = (ULONGLONG*) (page + offset);
                     *relocVirtualAddress =  *relocVirtualAddress  + (ptrdiff_t)(baseAddress - prefImageBase);
                     break;
                 default:
