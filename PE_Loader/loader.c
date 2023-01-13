@@ -147,7 +147,7 @@ int main(int argc, char *argv[]){
                 case IMAGE_REL_BASED_ABSOLUTE:
                     printf("[-] IMAGE_REL_BASED_ABSOLUTE -> nothing to be done!\n");
                     break;
-                case  IMAGE_REL_BASED_DIR64:
+                case IMAGE_REL_BASED_DIR64:
                     relocVirtualAddress = (ULONGLONG*) (page + offset );
                     *relocVirtualAddress =  *relocVirtualAddress  + (ptrdiff_t)(baseAddress - prefImageBase);
                     break;
