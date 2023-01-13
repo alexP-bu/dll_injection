@@ -133,7 +133,6 @@ int main(int argc, char *argv[]){
   if (baseAddress - prefImageBase != 0){
     PIMAGE_RELOCATION_BLOCK relocation = (PIMAGE_RELOCATION_BLOCK)(baseAddress + optionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
     while(relocation->VirtualAddress > 0){
-        //n_relocation = dwBlockSize - 8) //2
         DWORD numRelocs = (relocation->SizeOfBlock - (sizeof(DWORD) * 2) )/ (sizeof(WORD));
         UINT_PTR page = (UINT_PTR) (baseAddress + relocation->VirtualAddress);
         printf("[+] There are %d relocations to perform\n", numRelocs);
