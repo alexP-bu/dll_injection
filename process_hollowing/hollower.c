@@ -41,7 +41,6 @@ int main(int argc, char* argv[]){
         printf("[!] Error querying process information: %x", status);
         return 1;
     }
-
     PEB peb;
     if(!ReadProcessMemory(
         pi.hProcess,
