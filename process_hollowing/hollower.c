@@ -53,6 +53,7 @@ int main(int argc, char* argv[]){
         return 1;
     }
     printf("base address: %x\n", peb.ImageBaseAddress);
+    FreeLibrary(ntdll);
     //read the NT headers
     //unmap destination section with NtUnmapViewOfSection
     //allocate memory for new image with virtuallocex, 

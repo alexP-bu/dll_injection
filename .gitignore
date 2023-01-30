@@ -1,3 +1,5 @@
 *.dll
 *.exe
 *.vscode
+*.venv
+*.__pycache__
