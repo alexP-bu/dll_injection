@@ -1,9 +1,0 @@
-{
-  "files.associations": {
-    "*.ml": "ocaml",
-    "*.mli": "ocaml",
-    "*.module": "php",
-    "windows.h": "c",
-    "types.h": "c"
-  }
-}
