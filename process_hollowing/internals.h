@@ -1,4 +1,3 @@
-
 typedef struct _LSA_UNICODE_STRING {
   USHORT Length;
   USHORT MaximumLength;

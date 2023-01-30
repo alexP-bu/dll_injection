@@ -1,7 +1,7 @@
 //idea from https://github.com/m0n0ph1/Process-Hollowing
 #include <windows.h>
 #include <stdio.h>
-#include "types.h"
+#include "internals.h"
 
 int main(int argc, char* argv[]){
     //first create a process in suspended state
