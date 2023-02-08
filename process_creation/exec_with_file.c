@@ -7,31 +7,51 @@ int main(int argc, char** argv){
     dwArgsLen += strlen(argv[i]);
   }
   char* lpCommandLine = malloc(
-    (sizeof(char) * (strlen("cmd /c"))) + 
-    (sizeof(char) * (dwArgsLen + 1)) + // +1 for null terminator
-    (sizeof(char) * strlen("> outfile.txt")) 
+    (sizeof(char) * (strlen("cmd /c "))) + 
+    (sizeof(char) * (dwArgsLen + 1)) // +1 for null terminator 
   );
   if(!lpCommandLine){
     printf("[!] Error allocating memory for command line!");
     return -1;
   }
-  //format: cmd /c program args >> outfile.txt 
-  sprintf(lpCommandLine, "cmd /c");
+  //format: cmd /c program arg0 arg1 
+  sprintf(lpCommandLine, "cmd /c ");
   for(DWORD i = 1; i < argc; i++){
     sprintf(lpCommandLine + strlen(lpCommandLine), "%s ", argv[i]);
   }
-  sprintf(lpCommandLine + strlen(lpCommandLine), "%s%c", "> outfile.txt", '\0');
+  sprintf(lpCommandLine + strlen(lpCommandLine), "%c", '\0');
   //printf("got command line: %s\nlen: %d\n", lpCommandLine, strlen(lpCommandLine)); //DEBUG
+  //create file
+  HANDLE hFile = NULL;
+  SECURITY_ATTRIBUTES sa;
+  sa.nLength = sizeof(sa);
+  sa.bInheritHandle = TRUE;
+  sa.lpSecurityDescriptor = NULL;
+  hFile = CreateFileA(
+    "outfile.txt",
+    GENERIC_WRITE,
+    0,
+    &sa,
+    CREATE_ALWAYS,
+    FILE_ATTRIBUTE_NORMAL,
+    NULL
+  );
+  if(!hFile){
+    printf("[!] Error creating file: %d\n", GetLastError());
+  }
   STARTUPINFO si;
+  ZeroMemory(&si, sizeof(si));
+  si.cb = sizeof(si);
+  si.hStdOutput = hFile;
+  si.dwFlags = STARTF_USESTDHANDLES;
   PROCESS_INFORMATION pi;
   ZeroMemory(&pi, sizeof(pi));
-  ZeroMemory(&si, sizeof(si));
   if(!CreateProcessA(
     NULL,
     lpCommandLine,
     NULL,
     NULL,
-    FALSE,
+    TRUE,
     0,
     NULL,
     NULL,
@@ -44,6 +64,7 @@ int main(int argc, char** argv){
   WaitForSingleObject(pi.hProcess, INFINITE);
   CloseHandle(pi.hThread);
   CloseHandle(pi.hProcess);
+  CloseHandle(hFile);
   free(lpCommandLine);
   if(!PrintFileContents("outfile.txt")){
     printf("[!] Error printing file contents...");
