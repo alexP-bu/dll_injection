@@ -1,8 +1,8 @@
 #include "printfile.h"
 
-#define BUFSIZE 1024
+#define BUFSIZE 4096
 
-BOOL readFromPipe(HANDLE hReadPipe){
+BOOL readFromPipe(HANDLE hReadPipe, PBYTE lpBuffer){
   DWORD lpTotalBytesAvail = 0;
   if(!PeekNamedPipe(
     hReadPipe,
@@ -15,23 +15,22 @@ BOOL readFromPipe(HANDLE hReadPipe){
     printf("[!] Error peeking pipe: %d\n", GetLastError());
     return FALSE;
   };
-  if(lpTotalBytesAvail > 0){
-    BYTE* lpBuffer = malloc(sizeof(BYTE) * (lpTotalBytesAvail + 1));
+  
+  while(lpTotalBytesAvail > 0){
     DWORD lpNumberOfBytesRead = 0;
     if(!ReadFile(
       hReadPipe,
       lpBuffer,
-      lpTotalBytesAvail,
+      BUFSIZE - 1,
       &lpNumberOfBytesRead,
       NULL
     )){
       printf("[!] Error reading contents of pipe: %d\n", GetLastError());
       return FALSE;
     };
-    lpBuffer[lpTotalBytesAvail] = '\0';
+    lpBuffer[lpNumberOfBytesRead] = '\0';
     printf("%s", lpBuffer);
-    free(lpBuffer);
-    lpTotalBytesAvail = 0;
+    lpTotalBytesAvail -= lpNumberOfBytesRead;
   }
   return TRUE;
 }
@@ -104,13 +103,14 @@ int main(int argc, char** argv){
     return -1;
   }
   //read from pipe
+  PBYTE lpBuffer = malloc(sizeof(BYTE) * (BUFSIZE));
   while(WaitForSingleObject(pi.hProcess, 50)){
-    if(!readFromPipe(hReadPipe)){
+    if(!readFromPipe(hReadPipe, lpBuffer)){
       return -1;
     }
   }
   //print any remaining output
-  if(!readFromPipe(hReadPipe)){
+  if(!readFromPipe(hReadPipe, lpBuffer)){
     return -1;
   }
   //cleanup
@@ -119,5 +119,6 @@ int main(int argc, char** argv){
   CloseHandle(hWritePipe);
   CloseHandle(hReadPipe);
   free(lpCommandLine);
+  free(lpBuffer);
   return 0;
 }

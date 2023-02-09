@@ -18,18 +18,18 @@ BOOL PrintFileContents(char* filename){
     return FALSE;
   }
   //get file size
-  DWORD dwFileSize = 0; 
-  dwFileSize = GetFileSize(
+  LARGE_INTEGER liFileSize; 
+  ZeroMemory(&liFileSize, sizeof(LARGE_INTEGER));
+  if(!GetFileSizeEx(
     hFile, 
-    NULL
-  );
-  if(!dwFileSize){
+    &liFileSize
+  )){
     printf("[!] Error getting file size: %d\n", GetLastError());
-    return FALSE;
-  }
+    return -1;
+  };
   //read file
   DWORD bytesRead;
-  PBYTE fileBuffer = malloc(sizeof(BYTE) * (dwFileSize + 1));
+  PBYTE fileBuffer = malloc(sizeof(BYTE) * (liFileSize.QuadPart + 1));
   if(!fileBuffer){
     printf("[!] Error allocating memory: %d\n", GetLastError());
     return FALSE;
@@ -37,14 +37,14 @@ BOOL PrintFileContents(char* filename){
   if(!ReadFile(
     hFile,
     fileBuffer,
-    dwFileSize,
+    liFileSize.QuadPart,
     &bytesRead,
     NULL
   )){
     printf("Error reading file: %d\n", GetLastError());
     return FALSE;
   };
-  fileBuffer[dwFileSize] = '\0';
+  fileBuffer[liFileSize.QuadPart] = '\0';
   //print file contents
   printf("%s", fileBuffer);
   CloseHandle(hFile);
