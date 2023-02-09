@@ -2,6 +2,7 @@
 
 #define BUFSIZE 4096
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
+#define NtCurrentProcess()((HANDLE)(LONG_PTR)-1)
 
 typedef NTSTATUS (NTAPI* ntAllocateVirtualMemory)(
   HANDLE ProcessHandle,
@@ -55,7 +56,7 @@ int main(int argc, char** argv){
   
   //lets get ntdll and functions we need from it
   HANDLE hProcess = NULL;
-  hProcess = GetCurrentProcess();
+  hProcess = NtCurrentProcess();
   if(!hProcess){
     printf("[!] Error getting current process: %d\n", GetLastError());
     return -1;
@@ -81,28 +82,28 @@ int main(int argc, char** argv){
   //let's remove our use of malloc by using HeapCreate, HeapAlloc, HeapFree, HeapDestroy
   //finally let's bypass HeapAlloc with a direct call to NtAllocateVirtualMemory
   NTSTATUS ntStatus;
-  SIZE_T tCommandLine = (sizeof(BYTE) * (strlen("cmd /c "))) + (sizeof(BYTE) * (dwArgsLen + 1));
-  PBYTE lpCommandLine = 0;
+  SIZE_T stCommandLine = (sizeof(BYTE) * (strlen("cmd /c "))) + (sizeof(BYTE) * (dwArgsLen + 1));
+  PVOID lpCommandLine = 0;
   ntStatus = NtAllocateVirtualMemory(
     hProcess,
     (PVOID)&lpCommandLine,
     0,
-    &tCommandLine,
+    &stCommandLine,
     MEM_COMMIT | MEM_RESERVE,
-    PAGE_EXECUTE_READWRITE
+    PAGE_READWRITE
   );
   if(!NT_SUCCESS(ntStatus)){
     printf("[!] Error allocating virtual memory for command line: %x\n", ntStatus);
     return -1;
-  } 
+  }
 
   //format: cmd /c program arg0 arg1 
   sprintf(lpCommandLine, "cmd /c ");
   for(DWORD i = 1; i < argc; i++){
-    sprintf(lpCommandLine + strlen(lpCommandLine), "%s ", argv[i]);
+    sprintf((PBYTE)lpCommandLine + strlen(lpCommandLine), "%s ", argv[i]);
   }
-  sprintf(lpCommandLine + strlen(lpCommandLine), "%c", '\0');
-  printf("got command line: %s\nlen: %d\n", lpCommandLine, strlen(lpCommandLine)); //DEBUG
+  sprintf((PBYTE)lpCommandLine + strlen(lpCommandLine), "%c", '\0');
+  //printf("got command line: %s\nlen: %d\n", lpCommandLine, strlen(lpCommandLine)); //DEBUG
 
   //create pipe
   HANDLE hReadPipe;
@@ -159,14 +160,14 @@ int main(int argc, char** argv){
 
   //read from pipe
   PBYTE lpBuffer = NULL;
-  SIZE_T lpBufferSize = (SIZE_T)(sizeof(BYTE) * BUFSIZE);
+  SIZE_T stBufferSize = (SIZE_T)(sizeof(BYTE) * BUFSIZE);
   ntStatus = NtAllocateVirtualMemory(
     hProcess,
     (PVOID)&lpBuffer,
     0,
-    &lpBufferSize,
+    &stBufferSize,
     MEM_COMMIT | MEM_RESERVE,
-    PAGE_EXECUTE_READWRITE
+    PAGE_READWRITE
   );
   if(!NT_SUCCESS(ntStatus)){
     printf("[!] Error allocating virtual memory for output buffer: %x", ntStatus);
@@ -188,8 +189,8 @@ int main(int argc, char** argv){
   CloseHandle(hReadPipe);
   ntStatus = NtFreeVirtualMemory(
     hProcess,
-    (PVOID)&lpCommandLine,
-    0,
+    &lpCommandLine,
+    &stCommandLine,
     MEM_RELEASE
   );
   if(!NT_SUCCESS(ntStatus)){
@@ -199,7 +200,7 @@ int main(int argc, char** argv){
   ntStatus = NtFreeVirtualMemory(
     hProcess,
     (PVOID)&lpBuffer,
-    0,
+    &stBufferSize,
     MEM_RELEASE
   );
   if(!NT_SUCCESS(ntStatus)){
