@@ -30,6 +30,7 @@ BOOL readFromPipe(HANDLE hReadPipe){
     };
     lpBuffer[lpTotalBytesAvail] = '\0';
     printf("%s", lpBuffer);
+    free(lpBuffer);
     lpTotalBytesAvail = 0;
   }
   return TRUE;
